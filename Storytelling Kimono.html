@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>褪色 — A decadência do kimono</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="kimono.css" />
+</head>
+<body>
+
+  <!-- ====================== PALCO FIXO ====================== -->
+  <div class="stage" id="stage">
+
+    <!-- campo de padrões em canvas (unidades vivas) -->
+    <canvas id="patternfield"></canvas>
+
+    <!-- CENA 1 · abertura -->
+    <section class="scene" id="opening" data-screen-label="01-abertura">
+      <div class="scrim"></div>
+      <div class="title-block">
+        <div class="kanji-big" style="color:#f4ede0">褪色</div>
+        <div class="lead pt" style="margin-top:.5em;opacity:.92">A cor que se vai</div>
+      </div>
+    </section>
+
+    <!-- CENA 2 · gaveta (caixa de vídeo) -->
+    <section class="scene" id="drawer-scene" data-screen-label="02-gaveta" style="opacity:0">
+      <div class="video-box">(Insira aqui vídeo da gaveta)</div>
+    </section>
+
+    <!-- blackout -->
+    <div id="blackout"></div>
+
+    <!-- CENA 3 · 1890 — 2020 -->
+    <section class="scene" id="years-scene" data-screen-label="03-1890-2020" style="opacity:0">
+      <div class="title-block">
+        <div class="years" id="years-num">1890 — 2020</div>
+        <p class="lead pt" style="margin-top:1em">
+          Por 130 anos, um quimono atravessava <em>três gerações</em>.
+        </p>
+        <div class="lead jp" style="font-family:'Shippori Mincho B1';color:var(--gold);margin-top:.8em;letter-spacing:.3em">三代を着る</div>
+      </div>
+    </section>
+
+    <!-- CENA 4 · quimonos desbotados (molduras de foto) -->
+    <section class="scene" id="flash-scene" data-screen-label="04-desbotados" style="opacity:0">
+      <div class="photo-row" id="photo-row">
+        <div class="photo">foto · quimono desbotado</div>
+        <div class="photo">foto · quimono desbotado</div>
+        <div class="photo">foto · quimono desbotado</div>
+        <div class="photo">foto · quimono desbotado</div>
+      </div>
+    </section>
+
+    <!-- CENA 5 · cinco anos -->
+    <section class="scene" id="five-scene" data-screen-label="05-cinco-anos" style="opacity:0">
+      <div class="title-block">
+        <div class="kanji-sub">五 年</div>
+        <p class="lead pt" style="font-size:clamp(26px,3.4vw,52px)">
+          Hoje, na sua gaveta,<br />ele dura <em>cinco anos</em>.
+        </p>
+      </div>
+    </section>
+
+    <!-- CENA 6 · renascimento -->
+    <section class="scene" id="finale-scene" data-screen-label="06-renascimento" style="opacity:0">
+      <div class="scrim"></div>
+      <div class="title-block">
+        <div class="kanji-sub" style="color:var(--gold)">もう一度、ひらく</div>
+        <p class="lead pt" style="font-size:clamp(24px,3vw,46px);max-width:24ch">
+          E se a sua gaveta voltasse a<br /><em>contar histórias</em>?
+        </p>
+        <p class="lead pt" style="font-size:clamp(16px,1.7vw,26px);opacity:.8;margin-top:1.2em;max-width:30ch">
+          Damos uma segunda vida aos quimonos esquecidos —
+          restaurados, revividos, revestidos de cor.
+        </p>
+        <div class="finale-mark">褪色 · kimono revival</div>
+        <div class="finale-contact">
+          <span class="rule"></span>
+          <span class="tag">comece a história do seu quimono</span>
+          <a href="/cdn-cgi/l/email-protection#e28396878e8b8790a28b908dcf898b8f8d8c8dcc8892"><span class="__cf_email__" data-cfemail="d8b9acbdb4b1bdaa98b1aab7f5b3b1b5b7b6b7f6b2a8">[email&#160;protected]</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTEGRAÇÃO · sakura caindo (anexos) — cena "a cor desbota" -->
+    <div class="deco sakura" id="sakura" aria-hidden="true">
+      <img class="sakura-branch" src="assets/sakura-branch.png" alt="" />
+      <img class="petal p1" src="assets/sakura-petals.png" alt="" />
+      <img class="petal p2" src="assets/sakura-petals.png" alt="" />
+      <img class="petal p3" src="assets/sakura-petals.png" alt="" />
+      <img class="petal p4" src="assets/sakura-petals.png" alt="" />
+      <img class="petal p5" src="assets/sakura-petals.png" alt="" />
+    </div>
+
+    <!-- INTEGRAÇÃO · grous (anexo) — renascimento (atrás do texto) -->
+    <img class="deco cranes" id="cranes" src="assets/cranes.png" alt="" />
+
+    <!-- textos laterais verticais -->
+    <div class="side left" id="side-left">
+      <div class="rows" style="position:relative">
+        <div class="row" data-ch="0"><span class="jp">模様は生きていた</span></div>
+        <div class="row" data-ch="1"><span class="jp">手で織られ、手で染められ</span></div>
+        <div class="row" data-ch="2"><span class="jp">色が褪せてゆく</span></div>
+        <div class="row" data-ch="4"><span class="jp">五年で忘れられる</span></div>
+        <div class="row" data-ch="5"><span class="jp">もう一度、色をまとう</span></div>
+      </div>
+    </div>
+    <div class="side right" id="side-right">
+      <div class="rows" style="position:relative">
+        <div class="row" data-ch="0"><span class="pt">cada padrão foi uma promessa</span></div>
+        <div class="row" data-ch="1"><span class="pt">feito à mão para durar</span></div>
+        <div class="row" data-ch="2"><span class="pt">mas a cor se cansa</span></div>
+        <div class="row" data-ch="4"><span class="pt">esquecido numa gaveta</span></div>
+        <div class="row" data-ch="5"><span class="pt">a tradição volta a respirar</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- chrome -->
+  <div class="progress"><div class="progress__bar" id="pbar"></div></div>
+  <div class="scroll-hint" id="hint">role para começar<span class="arrow"></span></div>
+  <div class="cap" id="cap"></div>
+
+  <!-- trilho que dirige o scroll -->
+  <div class="scroll-track" id="track"></div>
+
+  <!-- libs -->
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="kimono-field.js"></script>
+  <script src="kimono-story.js"></script>
+</body>
+</html>
