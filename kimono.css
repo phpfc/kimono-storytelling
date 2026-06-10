@@ -150,6 +150,21 @@ body{
   text-shadow:0 2px 18px rgba(0,0,0,.6);
 }
 .finale-contact a:hover{ color:var(--gold); border-color:var(--gold); }
+/* link secundário do finale → leva à página sobre */
+.finale-contact .finale-secondary{
+  pointer-events:auto;
+  font-family:"Zen Kaku Gothic New",sans-serif;
+  font-weight:400;
+  font-size:clamp(11px,1.1vw,14px);
+  letter-spacing:.34em; text-transform:uppercase;
+  color:rgba(244,237,224,.62);
+  border-bottom:1px solid rgba(244,237,224,.18);
+  padding-bottom:.18em;
+  margin-top:.4em;
+  text-shadow:0 2px 18px rgba(0,0,0,.6);
+  transition:color .3s, border-color .3s;
+}
+.finale-contact .finale-secondary:hover{ color:var(--gold); border-color:var(--gold); }
 
 /* ============================================================
    TEXTOS LATERAIS VERTICAIS
@@ -306,4 +321,90 @@ body{
   .chapter-nav{ gap:10px; padding:6px 10px; }
   .nav-info{ min-width:110px; }
   .nav-label{ font-size:13px; }
+}
+
+/* ============================================================
+   PÁGINA SOBRE — leitura calma, sem GSAP
+   ============================================================ */
+.about-body{
+  overflow:auto;
+  background:var(--sumi);
+  color:#e9e1d2;
+  min-height:100vh;
+}
+.about{
+  max-width:min(680px,86vw);
+  margin:0 auto;
+  padding:clamp(80px,12vh,160px) 4vw clamp(80px,10vh,140px);
+}
+.about-head{
+  text-align:center;
+  margin-bottom:clamp(60px,10vh,120px);
+  opacity:0; animation:aboutFade 1.6s cubic-bezier(.2,.7,.2,1) .15s forwards;
+}
+.kanji-mark{
+  font-family:"Shippori Mincho B1",serif;
+  font-size:clamp(56px,8vw,120px);
+  font-weight:600; line-height:1;
+  letter-spacing:.04em; color:#f4ede0;
+}
+.about-sub{
+  margin-top:1.2em;
+  font-family:"Fraunces",serif; font-weight:300;
+  font-size:clamp(12px,1.1vw,15px);
+  letter-spacing:.36em; text-transform:uppercase;
+  color:var(--gold);
+}
+.about-section{
+  margin-bottom:clamp(48px,8vh,88px);
+  opacity:0; animation:aboutFade 1.6s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.about-section:nth-of-type(1){ animation-delay:.45s; }
+.about-section:nth-of-type(2){ animation-delay:.75s; }
+.about-section:nth-of-type(3){ animation-delay:1.05s; }
+.about-title{
+  font-family:"Fraunces",serif; font-weight:300; font-style:italic;
+  font-size:clamp(22px,2.2vw,32px);
+  color:var(--gold);
+  letter-spacing:.04em;
+  margin-bottom:1.2em;
+  display:flex; align-items:center; gap:14px;
+}
+.about-title::before{
+  content:""; display:inline-block;
+  width:32px; height:1px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  opacity:.7;
+}
+.about-section p{
+  font-family:"Fraunces",serif; font-weight:300;
+  font-size:clamp(17px,1.4vw,21px);
+  line-height:1.75;
+  color:#e9e1d2;
+  text-wrap:pretty;
+}
+.about-section p + p{ margin-top:1.1em; }
+.about-section em{ font-style:italic; color:#f4ede0; }
+.about-foot{
+  margin-top:clamp(40px,8vh,80px);
+  text-align:center;
+  opacity:0; animation:aboutFade 1.6s cubic-bezier(.2,.7,.2,1) 1.35s forwards;
+}
+.about-back{
+  font-family:"Fraunces",serif; font-style:italic; font-weight:300;
+  font-size:clamp(14px,1.2vw,16px);
+  letter-spacing:.04em;
+  color:rgba(244,237,224,.72);
+  text-decoration:none;
+  border-bottom:1px solid rgba(217,164,65,.3);
+  padding-bottom:.1em;
+  transition:color .3s, border-color .3s;
+}
+.about-back:hover{ color:var(--gold); border-color:var(--gold); }
+@keyframes aboutFade{
+  from{ opacity:0; transform:translateY(18px); }
+  to  { opacity:1; transform:translateY(0);   }
+}
+@media (prefers-reduced-motion: reduce){
+  .about-head,.about-section,.about-foot{ animation:none; opacity:1; transform:none; }
 }
