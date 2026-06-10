@@ -1,0 +1,17 @@
+/* ============================================================
+   褪色 — Storytelling Kimono
+   藍 índigo + 紅 beni · campo de padrões em canvas
+   ------------------------------------------------------------
+   Agregador de módulos. Cada arquivo importado abaixo cuida de
+   uma responsabilidade isolada — edite o módulo certo, não este.
+   Ordem importa: base → palco → camadas figurativas → chrome.
+   ============================================================ */
+@import url("css/base.css");
+@import url("css/stage.css");
+@import url("css/scrim.css");
+@import url("css/video.css");
+@import url("css/photos.css");
+@import url("css/text-scenes.css");
+@import url("css/sidebars.css");
+@import url("css/decorations.css");
+@import url("css/chrome.css");

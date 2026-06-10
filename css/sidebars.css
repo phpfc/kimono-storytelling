@@ -1,0 +1,30 @@
+/* ============================================================
+   Sidebars — textos laterais em escrita vertical
+   ============================================================ */
+.side{
+  position:absolute; top:0; bottom:0; display:flex; align-items:center;
+  writing-mode:vertical-rl; text-orientation:mixed;
+  font-size:clamp(19px,2.15vw,32px); letter-spacing:.3em;
+  z-index:7; pointer-events:none;
+}
+.side.left{ left:0; padding-left:clamp(14px,2.4vw,40px); }
+.side.right{ right:0; padding-right:clamp(14px,2.4vw,40px); }
+/* placa de legibilidade atrás de cada coluna */
+.side::before{ content:""; position:absolute; top:0; bottom:0; width:140px; z-index:-1; pointer-events:none; }
+.side.left::before{ left:0;  background:linear-gradient(to right, rgba(6,8,15,.92), rgba(6,8,15,.55) 50%, transparent 100%); }
+.side.right::before{ right:0; background:linear-gradient(to left,  rgba(6,8,15,.92), rgba(6,8,15,.55) 50%, transparent 100%); }
+.side .rows{ position:relative; }
+/* todas as linhas empilhadas no mesmo ponto da coluna; só uma visível por vez */
+.side .row{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  opacity:0; will-change:opacity; white-space:nowrap;
+  color:#fbf6ea; text-shadow:0 2px 22px rgba(0,0,0,.95), 0 0 4px rgba(0,0,0,.8);
+}
+.side .jp{ font-family:"Shippori Mincho B1",serif; font-weight:600; }
+/* PT também na vertical (Latim deitado) — fica contido na coluna, nunca vaza */
+.side .pt{
+  writing-mode:vertical-rl; text-orientation:sideways;
+  font-family:"Fraunces",serif; font-style:italic; font-weight:400;
+  letter-spacing:.05em; font-size:.92em; color:#f6eedd;
+}
+@media (max-width:760px){ .side{ display:none; } }

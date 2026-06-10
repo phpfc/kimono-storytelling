@@ -1,0 +1,26 @@
+/* ============================================================
+   Caixa de vídeo (cena da gaveta) — moldura + viñeta de escuro
+   ============================================================ */
+.video-box{
+  position:relative;
+  width:min(62vw,840px); aspect-ratio:16/10;
+  border-radius:8px;
+  overflow:hidden;
+  background:rgba(0,0,0,.85);
+  box-shadow:0 30px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(244,237,224,.12) inset;
+}
+.video-box .drawer-video{
+  width:100%; height:100%;
+  object-fit:cover;
+  display:block;
+  filter:brightness(.65) contrast(1.02) saturate(.9);
+}
+/* overlay escuro com viñeta — escurece mas mantém o conteúdo legível */
+.video-box::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 100% 90% at 50% 50%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.3));
+  pointer-events:none;
+}

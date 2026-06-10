@@ -1,0 +1,24 @@
+/* ============================================================
+   Scrim — véu de legibilidade sobre o canvas; override mais
+   forte no finale para garantir contraste sobre o ouro vivo
+   ============================================================ */
+.scrim{
+  position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse 60% 54% at 50% 50%,
+    rgba(9,11,20,.84) 0%, rgba(9,11,20,.62) 40%,
+    rgba(9,11,20,.28) 64%, transparent 84%);
+}
+/* finale sobre padrão dourado vivo → scrim forte e amplo (texto SEMPRE legível,
+   independe do brilho do padrão; o ouro continua a brilhar nas bordas/cantos) */
+#finale-scene .scrim{
+  background:
+    radial-gradient(ellipse 58% 66% at 50% 49%,
+      rgba(6,7,12,.96) 0%, rgba(6,7,12,.92) 34%,
+      rgba(6,7,12,.74) 56%, rgba(6,7,12,.34) 74%, transparent 90%),
+    linear-gradient(to bottom, rgba(6,7,12,.25), rgba(6,7,12,.32) 60%, rgba(6,7,12,.58));
+}
+/* sombra de leitura garantida no texto do finale (insurance além do scrim) */
+#finale-scene .kanji-sub,
+#finale-scene .lead{
+  text-shadow:0 2px 24px rgba(0,0,0,.92), 0 0 8px rgba(0,0,0,.7);
+}
