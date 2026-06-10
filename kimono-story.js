@@ -61,8 +61,6 @@
   tl.to(F, { waveAmp: 3, duration: 5, ease: 'power2.in' }, 21);
   tl.to(F, { scatter: 0.14, duration: 5, ease: 'power1.in' }, 21);
   tl.to(sideRows(2), { opacity: 0, duration: 1.6 }, 26.2);
-  tl.to('#sakura', { opacity: 1, duration: 2.6, ease: 'power2.out' }, 21.5);
-  tl.to('#sakura', { opacity: 0, duration: 2.4, ease: 'power1.in' }, 25.6);
 
   tl.to('#blackout', { opacity: 1, duration: 3, ease: 'power2.in' }, 27.5);
   tl.add(setCap(''), 28);
@@ -93,7 +91,6 @@
   tl.to(F, { scatter: 0, duration: 3.2, ease: 'power3.out' }, 54.3);
   tl.to(F, { life: 1, duration: 1.6, ease: 'power3.out' }, 54.4);
   tl.to(F, { waveAmp: 15, duration: 3, ease: 'power2.out' }, 54.4);
-  tl.to('#cranes', { opacity: 0.85, duration: 3, ease: 'power2.out' }, 55.6);
   tl.add(setCap(''), 56);
 
   tl.to('#finale-scene', { opacity: 1, duration: 2 }, 56);
@@ -250,7 +247,7 @@
         currentStop = 0;
         updateNavUI();
         controlVideo(0);
-        gsap.set(['#drawer-scene', '#years-scene', '#five-scene', '#finale-scene', '#cranes', '#sakura'], { opacity: 0 });
+        gsap.set(['#drawer-scene', '#years-scene', '#five-scene', '#finale-scene'], { opacity: 0 });
         gsap.set(finaleLocks, { opacity: 0, y: 0 });
         gsap.set('#opening', { opacity: 1 });
         [1, 2, 3, 4, 5].forEach(ch => gsap.set(sideRows(ch), { opacity: 0 }));
