@@ -9,11 +9,12 @@
   --life:1;
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
+html, body{ height:100%; }
 body{
   background:var(--sumi);
   color:#1a1a1a;
   font-family:"Shippori Mincho B1","Fraunces",serif;
-  overflow-x:hidden;
+  overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
 
@@ -57,19 +58,30 @@ body{
 }
 
 /* ============================================================
-   CAIXA DE VÍDEO (gaveta) — simples, sem animação
+   CAIXA DE VÍDEO (gaveta)
    ============================================================ */
 .video-box{
+  position:relative;
   width:min(62vw,840px); aspect-ratio:16/10;
-  border:2px dashed rgba(244,237,224,.55);
   border-radius:8px;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(8,10,18,.42);
-  color:rgba(244,237,224,.9);
-  font-family:"Zen Kaku Gothic New",sans-serif;
-  letter-spacing:.22em; text-transform:uppercase;
-  font-size:clamp(13px,1.4vw,19px);
-  text-align:center; padding:0 6%;
+  overflow:hidden;
+  background:rgba(0,0,0,.85);
+  box-shadow:0 30px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(244,237,224,.12) inset;
+}
+.video-box .drawer-video{
+  width:100%; height:100%;
+  object-fit:cover;
+  display:block;
+  filter:brightness(.65) contrast(1.02) saturate(.9);
+}
+/* overlay escuro com viñeta — escurece mas mantém o conteúdo legível */
+.video-box::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 100% 90% at 50% 50%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.3));
+  pointer-events:none;
 }
 
 /* ============================================================
@@ -112,9 +124,11 @@ body{
 .lead.pt{ color:#e9e1d2; }
 .kanji-sub{ font-size:clamp(22px,2.6vw,40px); letter-spacing:.5em; color:var(--gold); margin-bottom:.6em; }
 .finale-mark{
-  font-family:"Fraunces",serif; font-weight:400; font-size:clamp(18px,1.9vw,28px);
-  letter-spacing:.36em; text-transform:uppercase; color:var(--gold);
-  margin-top:1.9em; text-shadow:0 2px 22px rgba(0,0,0,.7), 0 0 1px rgba(0,0,0,.6);
+  font-family:"Fraunces",serif; font-weight:600; font-size:clamp(22px,2.3vw,34px);
+  letter-spacing:.36em; text-transform:uppercase; color:#f6cf72;
+  margin-top:1.9em;
+  text-shadow:0 2px 26px rgba(0,0,0,.96), 0 0 12px rgba(0,0,0,.88), 0 1px 2px rgba(0,0,0,.92);
+  filter:drop-shadow(0 0 18px rgba(246,207,114,.25));
 }
 /* bloco de contato / CTA do final */
 .finale-contact{
@@ -207,26 +221,89 @@ body{
 @keyframes cranedrift{ 0%,100%{ translate:0 0; } 50%{ translate:0 -16px; } }
 
 /* ============================================================
-   CHROME
+   CHROME — caption + navegação de capítulos
    ============================================================ */
-.progress{
-  position:fixed; right:18px; top:50%; transform:translateY(-50%);
-  width:2px; height:34vh; background:rgba(255,255,255,.18);
-  z-index:20; border-radius:2px; mix-blend-mode:difference;
-}
-.progress__bar{ position:absolute; left:0; top:0; width:100%; height:0%; background:#fff; border-radius:2px; }
-.scroll-hint{
-  position:fixed; left:50%; bottom:42px; transform:translateX(-50%); z-index:20; text-align:center;
-  font-family:"Zen Kaku Gothic New",sans-serif; font-size:13px; letter-spacing:.34em; text-transform:uppercase;
-  color:rgba(247,240,226,.9); text-shadow:0 1px 12px rgba(0,0,0,.8); transition:opacity .4s;
-}
-.scroll-hint .arrow{ display:block; margin:8px auto 0; width:1px; height:30px; background:linear-gradient(currentColor,transparent); animation:hint 1.8s ease-in-out infinite; }
-@keyframes hint{ 0%,100%{transform:scaleY(.4);opacity:.4} 50%{transform:scaleY(1);opacity:1} }
 .cap{
-  position:fixed; left:50%; transform:translateX(-50%); bottom:18px; z-index:21;
-  font-family:"Zen Kaku Gothic New",sans-serif; font-size:14px; letter-spacing:.34em; text-transform:uppercase;
+  position:fixed; left:50%; transform:translateX(-50%); top:24px; z-index:21;
+  font-family:"Zen Kaku Gothic New",sans-serif; font-size:13px; letter-spacing:.34em; text-transform:uppercase;
   color:#f7f0e2; padding:7px 18px; border-radius:999px;
   background:rgba(6,8,15,.6); backdrop-filter:blur(3px);
   text-shadow:0 1px 10px rgba(0,0,0,.7);
+  pointer-events:none;
 }
-@media (prefers-reduced-motion: reduce){ .scroll-hint .arrow{ animation:none; } }
+
+/* navegação por capítulos */
+.chapter-nav{
+  position:fixed; left:50%; bottom:28px; transform:translateX(-50%);
+  display:flex; align-items:center; gap:18px;
+  z-index:30;
+  background:rgba(6,8,15,.62);
+  backdrop-filter:blur(10px) saturate(1.1);
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid rgba(244,237,224,.14);
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+  transition:background .4s ease, border-color .4s ease, padding .4s ease;
+}
+/* navegação one-way: botão prev sempre oculto */
+#btn-prev{ display:none; }
+/* estado final: substitui prev/next por botão "reiniciar" */
+.chapter-nav[data-final="true"]{
+  padding:8px 22px;
+  background:rgba(6,8,15,.5);
+}
+.chapter-nav[data-final="true"] .nav-info,
+.chapter-nav[data-final="true"] #btn-next{ display:none; }
+.restart-btn{
+  display:none;
+  background:transparent; border:none;
+  font-family:"Fraunces",serif; font-style:italic; font-weight:400;
+  font-size:14px; letter-spacing:.18em;
+  color:#f6cf72;
+  border-bottom:1px solid rgba(246,207,114,.4);
+  padding:4px 6px 5px;
+  cursor:pointer;
+  transition:color .25s, border-color .25s;
+}
+.restart-btn:hover{ color:#fde7a8; border-color:#fde7a8; }
+.chapter-nav[data-final="true"] .restart-btn{ display:inline-block; }
+.nav-btn{
+  width:40px; height:40px;
+  border-radius:50%;
+  background:rgba(244,237,224,.06);
+  border:1px solid rgba(244,237,224,.18);
+  color:#f4ede0;
+  font-family:"Fraunces",serif; font-size:24px; line-height:1; padding:0 0 3px 0;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease, opacity .2s;
+}
+.nav-btn:hover:not(:disabled){
+  background:rgba(244,237,224,.18);
+  border-color:rgba(244,237,224,.34);
+  transform:scale(1.06);
+}
+.nav-btn:active:not(:disabled){ transform:scale(.96); }
+.nav-btn:disabled{ opacity:.28; cursor:not-allowed; }
+.nav-info{
+  min-width:150px; text-align:center; color:#f4ede0;
+  padding:0 4px;
+}
+.nav-count{
+  font-family:"Zen Kaku Gothic New",sans-serif;
+  font-size:10px; letter-spacing:.34em; text-transform:uppercase;
+  color:rgba(247,240,226,.62);
+}
+.nav-sep{ margin:0 .35em; opacity:.5; }
+.nav-label{
+  margin-top:4px;
+  font-family:"Shippori Mincho B1",serif; font-weight:500;
+  font-size:15px; letter-spacing:.18em;
+  color:#f7f0e2;
+  text-shadow:0 1px 8px rgba(0,0,0,.7);
+}
+@media (max-width:520px){
+  .chapter-nav{ gap:10px; padding:6px 10px; }
+  .nav-info{ min-width:110px; }
+  .nav-label{ font-size:13px; }
+}

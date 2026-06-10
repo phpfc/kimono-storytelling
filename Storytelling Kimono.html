@@ -28,7 +28,11 @@
 
     <!-- CENA 2 · gaveta (caixa de vídeo) -->
     <section class="scene" id="drawer-scene" data-screen-label="02-gaveta" style="opacity:0">
-      <div class="video-box">(Insira aqui vídeo da gaveta)</div>
+      <div class="video-box">
+        <video class="drawer-video" autoplay muted playsinline preload="auto">
+          <source src="istockphoto-1400862287-640_adpp_is.mp4" type="video/mp4" />
+        </video>
+      </div>
     </section>
 
     <!-- blackout -->
@@ -122,16 +126,22 @@
   </div>
 
   <!-- chrome -->
-  <div class="progress"><div class="progress__bar" id="pbar"></div></div>
-  <div class="scroll-hint" id="hint">role para começar<span class="arrow"></span></div>
   <div class="cap" id="cap"></div>
 
-  <!-- trilho que dirige o scroll -->
-  <div class="scroll-track" id="track"></div>
+  <!-- navegação por capítulos -->
+  <nav class="chapter-nav" id="chapter-nav" aria-label="navegação de capítulos">
+    <button class="nav-btn" id="btn-prev" aria-label="capítulo anterior">‹</button>
+    <div class="nav-info">
+      <div class="nav-count"><span id="chapter-num">01</span><span class="nav-sep">/</span><span id="chapter-total">07</span></div>
+      <div class="nav-label" id="chapter-label">青海波</div>
+    </div>
+    <button class="nav-btn" id="btn-next" aria-label="próximo capítulo">›</button>
+    <button class="restart-btn" id="btn-restart" type="button">reiniciar a história</button>
+  </nav>
 
   <!-- libs -->
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="kimono-field.js"></script>
   <script src="kimono-story.js"></script>
 </body>

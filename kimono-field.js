@@ -36,7 +36,6 @@
 
   const MOT = [
     { pal: { a: '#15294f', b: '#2f5c98', c: '#5e90c9', hi: '#bcd7f2', bg: '#0c1834' } }, // seigaiha índigo
-    { pal: { a: '#11313f', b: '#23596b', c: '#52a6b3', hi: '#cdeee6', bg: '#081a24' } }, // asanoha teal
     { pal: { a: '#5e1820', b: '#a3303a', c: '#d07a6a', hi: '#f3d3c6', bg: '#330c11' } }, // yabane beni
     { pal: { a: '#6f1a1f', b: '#b3742a', c: '#d8a23c', hi: '#f6df93', bg: '#380e12' } }, // kikkō ouro/vermelho
   ];
@@ -50,10 +49,8 @@
 
   /* tamanhos por motivo */
   const seigR = () => clamp(Math.min(W, H) / (11 * P.density), 44, 104);
-  const asaR = () => clamp(Math.min(W, H) / (15 * P.density), 34, 74);
   const yabR = () => clamp(Math.min(W, H) / (13 * P.density), 40, 84);
   const kikR = () => clamp(Math.min(W, H) / (16 * P.density), 32, 70);
-  const meshR = () => clamp(Math.min(W, H) / (17 * P.density), 28, 62);
 
   /* ===================== ONDA: deslocamento de UM vértice (repouso → animado) =====================
      Baixa frequência → vértices vizinhos andam quase juntos → as linhas que
@@ -117,7 +114,8 @@
         let ddx = amp * (0.62 * s1 + 0.38 * s2), ddy = amp * (0.50 * c1 + 0.30 * Math.sin(p2 * 1.15));
         let scl = 1 + 0.045 * s1, al = alpha;
         if (sct > 0) { const h = hash2(col + 5, row + 9), a = h * TAU, mg = sct * r * 2.4; ddx += Math.cos(a) * mg; ddy += Math.sin(a) * mg * 0.9 - sct * r * 0.7; scl *= 1 - sct * 0.35; al *= 1 - sct * 0.55; }
-        const spr = seigSprites[hash2(col, row) < 0.1 ? 2 : (hash2(col, row) < 0.55 ? 0 : 1)];
+        const hv = hash2(col, row);
+        const spr = seigSprites[hv < 0.1 ? 2 : (hv < 0.55 ? 0 : 1)];
         const e = spr.ext * scl; ctx.globalAlpha = al;
         ctx.drawImage(spr.cn, lx + ddx - e, ly + ddy - e, e * 2, e * 2);
       }
@@ -153,51 +151,23 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ---- 1 · ASANOHA — placa hexagonal nítida com estrela de cânhamo (verde-azul) ---- */
-  function drawAsanoha(alpha) {
-    const r = asaR();
-    shingle(asaSprites, { dx: SQ3 * r, dy: 1.5 * r, rowOff: SQ3 * r / 2, r, pick: (c, w) => { const h = hash2(c, w); return h < 0.16 ? 2 : (h < 0.58 ? 0 : 1); } }, alpha);
-  }
-
-  /* ---- 2 · YABANE — penas de flecha empilhadas (vermelho), colunas alternam ---- */
+  /* ---- 1 · YABANE — penas de flecha empilhadas (vermelho), colunas alternam ---- */
   function drawYabane(alpha) {
     const r = yabR();
     shingle(yabSprites, { dx: r * 1.18, dy: r * 0.82, rowOff: 0, r, pick: (c) => (c & 1) ? 1 : 0 }, alpha);
   }
 
-  /* ---- 3 · KIKKŌ-HANA — cascos de tartaruga nítidos + flores (dourado) ---- */
+  /* ---- 2 · KIKKŌ-HANA — cascos de tartaruga nítidos + flores (dourado) ---- */
   function drawKikko(alpha) {
     const r = kikR();
     shingle(kikSprites, { dx: SQ3 * r, dy: 1.5 * r, rowOff: SQ3 * r / 2, r, pick: (c, w) => hash2(c, w) < 0.22 ? 1 : 0 }, alpha);
   }
 
-  const DRAW = [drawSeigaiha, drawAsanoha, drawYabane, drawKikko];
+  const DRAW = [drawSeigaiha, drawYabane, drawKikko];
 
-  /* sprites das 3 novas famílias (montados 1x no build) */
-  let asaSprites = [], yabSprites = [], kikSprites = [];
+  /* sprites (montados 1x no build) */
+  let yabSprites = [], kikSprites = [];
   const hexPath = (g, R2, rot) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = rot + i * PI3, x = Math.cos(a) * R2, y = Math.sin(a) * R2; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); };
-
-  // ASANOHA: hexágono opaco (a aresta do hexágono É a malha) + estrela de raios/triângulos.
-  function spAsanohaUnit(P_, r, variant) {
-    const ext = r * 1.18;                         // > célula → sempre sobrepõe (nunca abre vão)
-    return spriteCanvas(ext, (g) => {
-      const hr = r * 1.02;
-      const v = []; for (let i = 0; i < 6; i++) { const a = PI6 + i * PI3; v.push([Math.cos(a) * hr, Math.sin(a) * hr]); }
-      // 6 triângulos alternados (dá o miolo do asanoha)
-      for (let i = 0; i < 6; i++) { g.fillStyle = css(i & 1 ? P_.b : P_.a); g.beginPath(); g.moveTo(0, 0); g.lineTo(v[i][0], v[i][1]); g.lineTo(v[(i + 1) % 6][0], v[(i + 1) % 6][1]); g.closePath(); g.fill(); }
-      g.lineJoin = g.lineCap = 'round';
-      // estrela: raios + os 2 triângulos girados
-      g.lineWidth = Math.max(1.2, hr * 0.06); g.strokeStyle = css(variant === 2 ? P_.hi : P_.c, 0.96);
-      g.beginPath();
-      for (let i = 0; i < 6; i++) { g.moveTo(0, 0); g.lineTo(v[i][0], v[i][1]); }
-      g.moveTo(v[0][0], v[0][1]); g.lineTo(v[2][0], v[2][1]); g.lineTo(v[4][0], v[4][1]); g.closePath();
-      g.moveTo(v[1][0], v[1][1]); g.lineTo(v[3][0], v[3][1]); g.lineTo(v[5][0], v[5][1]); g.closePath();
-      g.stroke();
-      // contorno do hexágono = linha da malha (compartilhada visualmente com vizinhos)
-      g.lineWidth = Math.max(1, hr * 0.05); g.strokeStyle = css(P_.bg, 0.55); hexPath(g, hr, PI6); g.stroke();
-      g.fillStyle = css(variant === 2 ? P_.hi : P_.c); g.beginPath(); g.arc(0, 0, hr * 0.1, 0, TAU); g.fill();
-    });
-  }
 
   // YABANE: pena de flecha opaca, ponta p/ cima; empilha em coluna = fletching contínuo.
   function spYabaneUnit(P_, r, variant) {
@@ -236,37 +206,40 @@
   let PALc = [];
   function build() {
     W = canvas.clientWidth; H = canvas.clientHeight;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = 1;
     sdpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     MARGIN = Math.ceil(seigR() * 2.6);
     PALc = MOT.map(m => { const p = m.pal; return { a: hexc(p.a), b: hexc(p.b), c: hexc(p.c), hi: hexc(p.hi), bg: hexc(p.bg) }; });
     seigSprites = [0, 1, 2].map(v => spSeigaihaUnit(PALc[0], seigR(), v));
-    asaSprites = [0, 1, 2].map(v => spAsanohaUnit(PALc[1], asaR(), v));
-    yabSprites = [0, 1].map(v => spYabaneUnit(PALc[2], yabR(), v));
-    kikSprites = [0, 1].map(v => spKikkoUnit(PALc[3], kikR(), v));
+    yabSprites = [0, 1].map(v => spYabaneUnit(PALc[1], yabR(), v));
+    kikSprites = [0, 1].map(v => spKikkoUnit(PALc[2], kikR(), v));
   }
 
-  /* profundidade atmosférica + vinheta */
-  function drawDepth(bg) {
-    const g = ctx.createLinearGradient(0, 0, 0, H * 0.72);
-    g.addColorStop(0, css(mix(bg, [0, 0, 0], 0.18), 0.6));
-    g.addColorStop(1, css(bg, 0));
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    const v = ctx.createRadialGradient(W / 2, H * 0.5, Math.min(W, H) * 0.34, W / 2, H * 0.5, Math.max(W, H) * 0.82);
-    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, css(mix(bg, [0, 0, 0], 0.45), 0.5));
-    ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
-  }
-  function drawSheen() {
-    const lv = clamp(P.life, 0, 1); if (lv < 0.25) return;
-    const ph = curT * P.waveSpeed * 0.22;
-    const cxp = W * (0.5 + 0.42 * Math.sin(ph)), cyp = H * (0.5 + 0.34 * Math.cos(ph * 0.8));
-    const g = ctx.createRadialGradient(cxp, cyp, 0, cxp, cyp, Math.max(W, H) * 0.75);
-    g.addColorStop(0, `rgba(255,244,214,${0.06 * lv})`); g.addColorStop(1, 'rgba(255,244,214,0)');
-    ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
-  }
+  /* cache de gradientes em canvases offscreen — invalidados só quando bg ou W/H mudam */
+  const bgCache = { c: document.createElement('canvas'), key: '' };
+  const depthCache = { c: document.createElement('canvas'), key: '' };
 
+  function repaintBgCache(bg) {
+    const c = bgCache.c; c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    const grad = g.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, css(mix(bg, [0, 0, 0], 0.1)));
+    grad.addColorStop(1, css(mix(bg, [255, 255, 255], 0.04)));
+    g.fillStyle = grad; g.fillRect(0, 0, W, H);
+  }
+  function repaintDepthCache(bg) {
+    const c = depthCache.c; c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    const lin = g.createLinearGradient(0, 0, 0, H * 0.72);
+    lin.addColorStop(0, css(mix(bg, [0, 0, 0], 0.18), 0.6));
+    lin.addColorStop(1, css(bg, 0));
+    g.fillStyle = lin; g.fillRect(0, 0, W, H);
+    const rad = g.createRadialGradient(W / 2, H * 0.5, Math.min(W, H) * 0.34, W / 2, H * 0.5, Math.max(W, H) * 0.82);
+    rad.addColorStop(0, 'rgba(0,0,0,0)');
+    rad.addColorStop(1, css(mix(bg, [0, 0, 0], 0.45), 0.5));
+    g.fillStyle = rad; g.fillRect(0, 0, W, H);
+  }
   function frame(ts) {
     if (!running) return;
     if (!t0) t0 = ts;
@@ -275,27 +248,27 @@
     const pm = clamp(P.patternMix, 0, NMOT - 1);
     const i0 = Math.floor(pm), i1 = Math.min(i0 + 1, NMOT - 1), fr = pm - i0;
     const bg = mix(PALc[i0].bg, PALc[i1].bg, fr);
+    const key = ((bg[0] | 0) << 16) | ((bg[1] | 0) << 8) | (bg[2] | 0);
+    const dimKey = key + '|' + W + 'x' + H;
+
+    if (bgCache.key !== dimKey) { repaintBgCache(bg); bgCache.key = dimKey; }
+    if (depthCache.key !== dimKey) { repaintDepthCache(bg); depthCache.key = dimKey; }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const bgr = ctx.createLinearGradient(0, 0, 0, H);
-    bgr.addColorStop(0, css(mix(bg, [0, 0, 0], 0.1))); bgr.addColorStop(1, css(mix(bg, [255, 255, 255], 0.04)));
-    ctx.fillStyle = bgr; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(bgCache.c, 0, 0);
 
     const op = clamp(P.opacity, 0, 1);
     ctx.save();
     if (P.unitScale !== 1) { ctx.translate(W / 2, H / 2); ctx.scale(P.unitScale, P.unitScale); ctx.translate(-W / 2, -H / 2); }
+    // dessaturação driveada por life via filter (GPU-accelerated) — substitui o composite 'saturation'
+    if (P.life < 0.995) ctx.filter = `saturate(${(clamp(P.life, 0, 1) * 100) | 0}%)`;
+    // crossfade contínuo (sem threshold agressivo que causa pop) — mantém a transição suave
     DRAW[i0](op * (fr > 0.01 ? 1 - fr : 1));
     if (fr > 0.01) DRAW[i1](op * fr);
     ctx.restore();
 
-    drawDepth(bg);
-    drawSheen();
+    ctx.drawImage(depthCache.c, 0, 0);
 
-    if (P.life < 0.995) {
-      ctx.save(); ctx.globalCompositeOperation = 'saturation';
-      ctx.globalAlpha = clamp(1 - P.life, 0, 1); ctx.fillStyle = 'hsl(0,0%,55%)'; ctx.fillRect(0, 0, W, H);
-      ctx.restore(); ctx.globalCompositeOperation = 'source-over';
-    }
     ctx.globalAlpha = 1;
     raf = requestAnimationFrame(frame);
   }
