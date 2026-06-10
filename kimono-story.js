@@ -1,15 +1,20 @@
-/* ============================================================
-   kimono-story.js  ·  Storytelling controlado por botão (next) — one-way
-   Timeline GSAP em modo paused; navegação one-way + botão reiniciar no fim.
-   ============================================================ */
+/**
+ * KimonoStory — narrativa GSAP que conduz a história "褪色".
+ *
+ * Orquestra:
+ * - a timeline de cenas (texto, vídeo, finale);
+ * - a animação do campo de padrões (escrevendo em KimonoField.P);
+ * - a navegação one-way por capítulos (botão "próximo" + teclas).
+ *
+ * IIFE — depende de GSAP global e do KimonoField já carregado.
+ */
 (function () {
+  // $ — atalho para querySelector
   const $ = (s) => document.querySelector(s);
 
-  /* inicia o campo de padrões */
   KimonoField.init('#patternfield');
   const F = KimonoField.P;
 
-  /* ---------- textos laterais: posicionar absolutos ---------- */
   document.querySelectorAll('.side .rows').forEach((wrap) => {
     wrap.style.height = '64vh';
     wrap.querySelectorAll('.row').forEach((row) => {
@@ -21,34 +26,33 @@
       row.style.textShadow = '0 2px 18px rgba(0,0,0,.55)';
     });
   });
+  // sideRows — seleciona as linhas verticais (esquerda + direita) de um capítulo
   const sideRows = (ch) => document.querySelectorAll(`.side .row[data-ch="${ch}"]`);
   const photos = document.querySelectorAll('#photo-row .photo');
   const cap = $('#cap');
+  /**
+   * Fabrica um callback que troca o texto da legenda superior.
+   * Usado com `tl.add(setCap('...'), tempo)` para sincronizar com a timeline.
+   */
   const setCap = (t) => () => (cap.textContent = t);
 
-  /* intro: abertura visível por padrão */
   gsap.set(sideRows(0), { opacity: 1 });
 
-  /* ===== timeline (paused — controlada por botão next) ===== */
   const tl = gsap.timeline({ defaults: { ease: 'none' }, paused: true });
 
-  /* ===== padrões (KimonoField): 0=seigaiha · 1=yabane · 2=kikkō ===== */
 
-  /* ---- CAP.1 · abertura · 青海波 seigaiha ---- */
   tl.add(setCap('青海波 · seigaiha'), 0);
   tl.fromTo(F, { waveAmp: 13 }, { waveAmp: 18, duration: 6 }, 0);
 
-  /* ---- CAP.2 · gaveta (vídeo) sobre 矢絣 yagasuri (vermelho) ---- */
   tl.to('#opening', { opacity: 0, duration: 2 }, 7);
   tl.to(sideRows(0), { opacity: 0, duration: 1.5 }, 7);
-  tl.to(F, { patternMix: 1, duration: 4.5, ease: 'power1.inOut' }, 6.5);  // seigaiha → yabane
+  tl.to(F, { patternMix: 1, duration: 4.5, ease: 'power1.inOut' }, 6.5);  
   tl.add(setCap('矢絣 · yagasuri'), 8.5);
   tl.to('#drawer-scene', { opacity: 1, duration: 2 }, 8.5);
   tl.to(sideRows(1), { opacity: 1, duration: 1.5 }, 12.5);
   tl.to(F, { waveAmp: 22, unitScale: 1.06, duration: 4, ease: 'sine.inOut' }, 13);
   tl.to(F, { waveAmp: 15, unitScale: 1, duration: 3, ease: 'sine.inOut' }, 17);
 
-  /* ---- CAP.3 · a cor se esvai ---- */
   tl.add(setCap('色褪せ · a cor desbota'), 21);
   tl.to('#drawer-scene', { opacity: 0, duration: 2.5 }, 21);
   tl.to(sideRows(1), { opacity: 0, duration: 1.2 }, 21);
@@ -60,16 +64,13 @@
   tl.to('#sakura', { opacity: 1, duration: 2.6, ease: 'power2.out' }, 21.5);
   tl.to('#sakura', { opacity: 0, duration: 2.4, ease: 'power1.in' }, 25.6);
 
-  /* ---- CAP.4 · blackout ---- */
   tl.to('#blackout', { opacity: 1, duration: 3, ease: 'power2.in' }, 27.5);
   tl.add(setCap(''), 28);
 
-  /* ---- CAP.5 · 1890 — 2020 ---- */
   tl.to('#years-scene', { opacity: 1, duration: 2 }, 32);
   tl.from('#years-num', { letterSpacing: '0.4em', opacity: 0, y: 30, duration: 3, ease: 'power2.out' }, 32);
   tl.from('#years-scene .lead', { opacity: 0, y: 20, duration: 2.5, ease: 'power2.out' }, 33);
 
-  /* ---- CAP.6 · fotos quimonos desbotados ---- */
   tl.to('#years-scene', { opacity: 0, duration: 1.8 }, 39);
   tl.to('#flash-scene', { opacity: 1, duration: 0.6 }, 40);
   tl.add(setCap('褪せた着物 · quimonos esquecidos'), 40);
@@ -79,17 +80,15 @@
   });
   tl.to('#flash-scene', { opacity: 0, duration: 1.6 }, 46.5);
 
-  /* ---- CAP.7 · cinco anos ---- */
   tl.to('#five-scene', { opacity: 1, duration: 1.6 }, 48);
   tl.from('#five-scene .kanji-sub', { opacity: 0, y: 20, duration: 2, ease: 'power2.out' }, 48);
   tl.from('#five-scene .lead', { opacity: 0, y: 24, duration: 2.4, ease: 'power2.out' }, 48.5);
   tl.to(sideRows(4), { opacity: 1, duration: 1.4 }, 48.5);
   tl.add(setCap('五年 · cinco anos'), 51);
 
-  /* ---- CAP.7 · renascimento · 亀甲 kikkō + finale (stop único) ---- */
   tl.to('#five-scene', { opacity: 0, duration: 1.6 }, 53.5);
   tl.to(sideRows(4), { opacity: 0, duration: 1.2 }, 53.5);
-  tl.set(F, { scatter: 0.8, waveAmp: 6, patternMix: 2, life: 0.15 }, 54);  // → kikkō
+  tl.set(F, { scatter: 0.8, waveAmp: 6, patternMix: 2, life: 0.15 }, 54);  
   tl.to('#blackout', { opacity: 0, duration: 2, ease: 'power2.out' }, 54);
   tl.to(F, { scatter: 0, duration: 3.2, ease: 'power3.out' }, 54.3);
   tl.to(F, { life: 1, duration: 1.6, ease: 'power3.out' }, 54.4);
@@ -97,7 +96,6 @@
   tl.to('#cranes', { opacity: 0.85, duration: 3, ease: 'power2.out' }, 55.6);
   tl.add(setCap(''), 56);
 
-  /* ---- finale (mesma dobra) ---- */
   tl.to('#finale-scene', { opacity: 1, duration: 2 }, 56);
   tl.fromTo('#finale-scene .kanji-sub', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 2, ease: 'power2.out' }, 56);
   tl.fromTo('#finale-scene .lead', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 2.4, ease: 'power2.out', stagger: 0.5 }, 56.5);
@@ -105,23 +103,19 @@
   tl.fromTo('#finale-scene .finale-contact', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 2.4, ease: 'power2.out' }, 59);
   tl.to(sideRows(5), { opacity: 1, duration: 1.6 }, 57);
 
-  /* lock final: tween curto + set instantâneo em t=62 garantem estado pleno
-     mesmo se o tweenTo da navegação cortar antes dos fromTo() completarem.
-     Sem clearProps — alguns navegadores limpam estados de opacity em cascata. */
   const finaleLocks = ['#finale-scene', '#finale-scene .kanji-sub', '#finale-scene .lead', '#finale-scene .finale-mark', '#finale-scene .finale-contact'];
   tl.to(finaleLocks, { opacity: 1, y: 0, duration: 0.4, ease: 'none', overwrite: 'auto' }, 61.6);
   tl.set(finaleLocks, { opacity: 1, y: 0 }, 62);
   tl.to({}, { duration: 1 }, 64);
 
-  /* ===== NAVEGAÇÃO POR CAPÍTULOS (one-way) ===== */
   const STOPS = [
-    { t: 0,  label: '青海波' },         // 01 abertura · seigaiha
-    { t: 11, label: '引き出し' },       // 02 gaveta · vídeo sobre yagasuri
-    { t: 27, label: '色褪せ' },         // 03 cor desbota · sakura
-    { t: 36, label: '1890 — 2020' },    // 04 memória · 130 anos · três gerações
-    { t: 45, label: '褪せた着物' },     // 05 fotos quimonos esquecidos
-    { t: 52, label: '五年' },           // 06 hoje na sua gaveta
-    { t: 62, label: '褪色' },           // 07 renascimento kikkō + CTA
+    { t: 0,  label: '青海波' },         
+    { t: 11, label: '引き出し' },       
+    { t: 27, label: '色褪せ' },         
+    { t: 36, label: '1890 — 2020' },    
+    { t: 45, label: '褪せた着物' },     
+    { t: 52, label: '五年' },           
+    { t: 62, label: '褪色' },           
   ];
   const DRAWER_STOP = 1;
   const LAST_STOP = STOPS.length - 1;
@@ -136,22 +130,24 @@
 
   let currentStop = 0;
   let activeTween = null;
-  let videoLocked = false;       // next desabilitado enquanto vídeo toca
-  let videoTimeout = null;       // fallback caso vídeo não dispare `ended`
+  let videoLocked = false;       
+  let videoTimeout = null;       
 
   if (totalEl) totalEl.textContent = String(STOPS.length).padStart(2, '0');
 
+  /** Sincroniza UI da nav (número, label e estado disabled do botão "próximo"). */
   function updateNavUI() {
     if (numEl)   numEl.textContent   = String(currentStop + 1).padStart(2, '0');
     if (labelEl) labelEl.textContent = STOPS[currentStop].label;
     if (nextBtn) nextBtn.disabled = videoLocked || currentStop === LAST_STOP;
   }
 
+  /**
+   * Trava opacidade total no finale após chegar nele.
+   * Evita flicker quando algum tween residual ainda está em curso ao
+   * "completar" o último stop (especialmente em pulos rápidos pela nav).
+   */
   function forceFinaleVisible() {
-    /* segunda camada de garantia: aplica direto via gsap.set caso o tween
-       da navegação tenha cortado antes do estado final propagar.
-       Selector inclui filhos do .finale-contact para garantir o link [email]
-       e o tag — alguns fromTo() encadeados podem deixar valores intermediários. */
     gsap.set('#finale-scene', { opacity: 1 });
     gsap.set('#finale-scene .scrim', { opacity: 1 });
     gsap.set('#finale-scene .kanji-sub', { opacity: 1, y: 0 });
@@ -161,19 +157,26 @@
     gsap.set('#finale-scene .finale-contact > *', { opacity: 1 });
   }
 
+  /** Libera o lock do botão "próximo" (cena da gaveta). */
   function clearVideoLock() {
     videoLocked = false;
     if (videoTimeout) { clearTimeout(videoTimeout); videoTimeout = null; }
     updateNavUI();
   }
 
+  /**
+   * Toca/pausa o vídeo conforme o stop atual.
+   * Quando entra na cena da gaveta: trava o "próximo" até o vídeo terminar
+   * (ou até 12s, como rede de segurança caso `ended` nunca dispare —
+   * autoplay bloqueado, codec, etc.).
+   * @param {number} idx índice do stop atual
+   */
   function controlVideo(idx) {
     if (!drawerVid) return;
     if (idx === DRAWER_STOP) {
       drawerVid.currentTime = 0;
-      videoLocked = true;        // trava next durante a reprodução
-      /* fallback: se o vídeo não disparar `ended` em 12s (autoplay bloqueado,
-         erro de codec etc.), libera o next para o usuário avançar manualmente */
+      videoLocked = true;        
+      
       if (videoTimeout) clearTimeout(videoTimeout);
       videoTimeout = setTimeout(() => clearVideoLock(), 12000);
       const pr = drawerVid.play();
@@ -185,21 +188,31 @@
     }
   }
 
+  /** Mostra o botão "reiniciar" no lugar de "próximo" (data-final ativa o CSS). */
   function revealRestart() {
     if (!nav || !restartBtn) return;
     nav.setAttribute('data-final', 'true');
   }
 
+  /** Restaura a nav para o estado padrão (mostra "próximo" de novo). */
   function hideRestart() {
     if (!nav) return;
     nav.removeAttribute('data-final');
   }
 
+  /**
+   * Avança a timeline até o stop indicado.
+   * Navegação one-way: ignora se idx <= currentStop e bloqueia avanço
+   * durante o vídeo da gaveta — a menos que `opts.force` seja true
+   * (usado pelo handler `ended` do vídeo).
+   * Duração do tween é proporcional à distância na timeline (entre 0.8s e 7s),
+   * podendo ser sobrescrita por `opts.duration`.
+   * @param {number} idx índice em STOPS
+   * @param {{force?: boolean, duration?: number}} [opts]
+   */
   function goToStop(idx, opts = {}) {
     idx = Math.max(0, Math.min(LAST_STOP, idx));
-    /* one-way: rejeita qualquer movimento para trás (exceto restart com force) */
     if (!opts.force && idx <= currentStop) return;
-    /* next bloqueado enquanto vídeo toca */
     if (!opts.force && videoLocked && idx > DRAWER_STOP) return;
     if (activeTween) { activeTween.kill(); activeTween = null; }
     currentStop = idx;
@@ -207,8 +220,6 @@
     controlVideo(idx);
     const target = STOPS[idx].t;
     const dt = Math.abs(target - tl.time());
-    /* duração proporcional ao deltaT da timeline. Com 5 stops o salto final
-       (1890→2020 ─ CTA) cobre 26s — clamps até 7s para não parecer skip. */
     const dur = opts.duration ?? Math.min(7.0, Math.max(0.8, dt * 0.3));
     activeTween = tl.tweenTo(target, {
       duration: dur,
@@ -223,12 +234,15 @@
     });
   }
 
+  /**
+   * Volta a história ao começo via fade para blackout.
+   * Reseta cenas, sidebars, caption, vídeo e a posição da timeline
+   * antes de desbotar o blackout — evita ver o "rebobinar" das cenas.
+   */
   function restart() {
     if (activeTween) { activeTween.kill(); activeTween = null; }
     clearVideoLock();
     hideRestart();
-    /* overlay preto rápido esconde o reset (evita reverter a timeline e
-       mostrar todas as cenas em playback reverso) */
     gsap.to('#blackout', {
       opacity: 1, duration: 0.4, ease: 'power2.in',
       onComplete: () => {
@@ -236,7 +250,6 @@
         currentStop = 0;
         updateNavUI();
         controlVideo(0);
-        /* zera estado visual: cenas posteriores escondidas, abertura visível */
         gsap.set(['#drawer-scene', '#years-scene', '#five-scene', '#finale-scene', '#cranes', '#sakura'], { opacity: 0 });
         gsap.set(finaleLocks, { opacity: 0, y: 0 });
         gsap.set('#opening', { opacity: 1 });
@@ -251,7 +264,6 @@
   if (nextBtn)    nextBtn.addEventListener('click', () => goToStop(currentStop + 1));
   if (restartBtn) restartBtn.addEventListener('click', restart);
 
-  /* one-way: apenas teclas de avanço */
   window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
       e.preventDefault();
@@ -259,7 +271,6 @@
     }
   });
 
-  /* fim do vídeo → libera next e avança para o próximo stop (color desbota) */
   if (drawerVid) {
     drawerVid.addEventListener('ended', () => {
       if (currentStop !== DRAWER_STOP) return;
@@ -268,7 +279,6 @@
     });
   }
 
-  /* estado inicial */
   updateNavUI();
   controlVideo(0);
 

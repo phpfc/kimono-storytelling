@@ -1,0 +1,99 @@
+/* ============================================================
+   褪色 — Página sobre · leitura calma, sem GSAP
+   Estilos exclusivos de sobre.html (não compartilhados com a
+   experiência de storytelling).
+   ============================================================ */
+:root{
+  --gold:#d9a441;
+  --washi:#efe7d6;
+  --sumi:#0b0a0c;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html, body{ min-height:100%; }
+body{
+  font-family:"Shippori Mincho B1","Fraunces",serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+.about-body{
+  overflow:auto;
+  background:var(--sumi);
+  color:#e9e1d2;
+  min-height:100vh;
+}
+.about{
+  max-width:min(680px,86vw);
+  margin:0 auto;
+  padding:clamp(80px,12vh,160px) 4vw clamp(80px,10vh,140px);
+}
+.about-head{
+  text-align:center;
+  margin-bottom:clamp(60px,10vh,120px);
+  opacity:0; animation:aboutFade 1.6s cubic-bezier(.2,.7,.2,1) .15s forwards;
+}
+.kanji-mark{
+  font-family:"Shippori Mincho B1",serif;
+  font-size:clamp(56px,8vw,120px);
+  font-weight:600; line-height:1;
+  letter-spacing:.04em; color:#f4ede0;
+}
+.about-sub{
+  margin-top:1.2em;
+  font-family:"Fraunces",serif; font-weight:300;
+  font-size:clamp(12px,1.1vw,15px);
+  letter-spacing:.36em; text-transform:uppercase;
+  color:var(--gold);
+}
+.about-section{
+  margin-bottom:clamp(48px,8vh,88px);
+  opacity:0; animation:aboutFade 1.6s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.about-section:nth-of-type(1){ animation-delay:.45s; }
+.about-section:nth-of-type(2){ animation-delay:.75s; }
+.about-section:nth-of-type(3){ animation-delay:1.05s; }
+.about-title{
+  font-family:"Fraunces",serif; font-weight:300; font-style:italic;
+  font-size:clamp(22px,2.2vw,32px);
+  color:var(--gold);
+  letter-spacing:.04em;
+  margin-bottom:1.2em;
+  display:flex; align-items:center; gap:14px;
+}
+.about-title::before{
+  content:""; display:inline-block;
+  width:32px; height:1px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  opacity:.7;
+}
+.about-section p{
+  font-family:"Fraunces",serif; font-weight:300;
+  font-size:clamp(17px,1.4vw,21px);
+  line-height:1.75;
+  color:#e9e1d2;
+  text-wrap:pretty;
+}
+.about-section p + p{ margin-top:1.1em; }
+.about-section em{ font-style:italic; color:#f4ede0; }
+.about-foot{
+  margin-top:clamp(40px,8vh,80px);
+  text-align:center;
+  opacity:0; animation:aboutFade 1.6s cubic-bezier(.2,.7,.2,1) 1.35s forwards;
+}
+.about-back{
+  font-family:"Fraunces",serif; font-style:italic; font-weight:300;
+  font-size:clamp(14px,1.2vw,16px);
+  letter-spacing:.04em;
+  color:rgba(244,237,224,.72);
+  text-decoration:none;
+  border-bottom:1px solid rgba(217,164,65,.3);
+  padding-bottom:.1em;
+  transition:color .3s, border-color .3s;
+}
+.about-back:hover{ color:var(--gold); border-color:var(--gold); }
+@keyframes aboutFade{
+  from{ opacity:0; transform:translateY(18px); }
+  to  { opacity:1; transform:translateY(0);   }
+}
+@media (prefers-reduced-motion: reduce){
+  .about-head,.about-section,.about-foot{ animation:none; opacity:1; transform:none; }
+}

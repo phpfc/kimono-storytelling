@@ -1,37 +1,27 @@
-/* ============================================================
-   kimono-field.js — TECIDO DE MOTIVOS
-   ------------------------------------------------------------
-   PRINCÍPIO (o que faz parecer TECIDO e não ladrilhos):
-   as LINHAS do padrão são uma MALHA CONTÍNUA de vértices COMPARTILHADOS.
-   Cada quadro, todo vértice é deslocado pela mesma ONDA VIAJANTE; como
-   vértices vizinhos (e os compartilhados entre unidades adjacentes) se
-   movem juntos, as linhas DOBRAM em conjunto e fluem ATRAVÉS das fronteiras
-   das unidades — o tecido inteiro ondula como um pano só, sem nenhuma
-   unidade se soltar nem abrir vão.
-
-   • 0 · 青海波 seigaiha — escamas de arcos sobrepostos (SPRITES; os arcos já
-     fluem de uma escama p/ a outra). Mantido como está: é o exemplo certo.
-   • 1 · 麻葉 asanoha   — malha hexagonal de linhas (raios + estrela), cantos
-     COMPARTILHADOS entre hexágonos → teia contínua.
-   • 2 · 矢羽根 yabane   — colunas de chevrons cujas linhas são zigue-zagues
-     CONTÍNUOS (vértices compartilhados verticalmente).
-   • 3 · 亀甲花 kikkō    — rede de casco (favo) de linhas CONTÍNUAS + flores.
-
-   Desempenho: cada motivo monta sua geometria em poucos Path2D (1-3 fills,
-   1-2 strokes) → poucas chamadas de desenho, sem milhares de stroke()
-   isolados. Tudo determinístico por posição de repouso → nada pisca.
-
-   KimonoField.P (tweenável p/ GSAP):
-     patternMix 0..3 · life 1..0 · waveAmp px · scatter 0..1 ·
-     opacity · unitScale · density
-   ============================================================ */
+/**
+ * KimonoField — campo animado de padrões japoneses em <canvas>.
+ *
+ * Pinta o fundo da história: cada motivo (seigaiha, yabane, kikkō) tem
+ * sprites pré-renderizados que são tiled na tela com deslocamento de onda
+ * e dispersão controlados pelo objeto público `P` (manipulado pela
+ * timeline GSAP em kimono-story.js).
+ *
+ * IIFE para isolar estado interno; expõe a API em `window.KimonoField`.
+ */
 (function (global) {
   const TAU = Math.PI * 2, SQ3 = Math.sqrt(3), PI6 = Math.PI / 6, PI3 = Math.PI / 3;
+
+  // clamp — limita v ao intervalo [a, b]
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  // lerp — interpolação linear de a → b por t ∈ [0, 1]
   const lerp = (a, b, t) => a + (b - a) * t;
+  // hexc — converte string "#rrggbb" em [r, g, b] inteiros
   const hexc = (h) => { h = h.replace('#', ''); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; };
+  // mix — interpola duas cores [r,g,b] por t
   const mix = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+  // css — serializa [r,g,b] em "rgb(...)" ou "rgba(...)" com alfa opcional
   const css = (c, al) => al == null ? `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})` : `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${al})`;
+  // hash2 — hash determinístico 2D em [0, 1) (variação reproduzível por célula)
   const hash2 = (i, j) => (((i * 73856093) ^ (j * 19349663)) >>> 0) / 4294967295;
 
   const MOT = [
@@ -45,17 +35,30 @@
   let MARGIN = 0, sdpr = 2, dispR = 50;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /**
+   * Parâmetros públicos animáveis (a timeline GSAP escreve aqui).
+   * - patternMix: índice contínuo do motivo (0..NMOT-1); fração interpola dois motivos
+   * - life: saturação (0 = pb, 1 = vivo) aplicada via filtro CSS
+   * - waveAmp / waveSpeed: amplitude e velocidade do deslocamento de onda
+   * - scatter: dispersão aleatória das células (efeito "desbota")
+   * - opacity: opacidade global das camadas de motivo
+   * - unitScale: zoom aplicado ao conjunto (mantém o centro)
+   * - density: densidade dos tiles (maior = unidades menores)
+   */
   const P = { patternMix: 0, life: 1, waveAmp: 13, waveSpeed: 1, scatter: 0, opacity: 1, unitScale: 1, density: 1 };
 
-  /* tamanhos por motivo */
+  /* Raio (em px) de cada motivo, em função do viewport e de P.density.
+     Cada motivo tem proporção própria — não dá pra usar um valor único. */
   const seigR = () => clamp(Math.min(W, H) / (11 * P.density), 44, 104);
   const yabR = () => clamp(Math.min(W, H) / (13 * P.density), 40, 84);
   const kikR = () => clamp(Math.min(W, H) / (16 * P.density), 32, 70);
 
-  /* ===================== ONDA: deslocamento de UM vértice (repouso → animado) =====================
-     Baixa frequência → vértices vizinhos andam quase juntos → as linhas que
-     os ligam dobram coerentemente. 'scatter' espalha por hash da posição de
-     repouso (compartilhado → a teia se desfaz mas continua ligada). */
+  /**
+   * Deslocamento da onda em (x, y): combina duas senoides em direções
+   * diferentes (campo Perlin-like) e opcionalmente soma um jitter
+   * pseudo-aleatório quando P.scatter > 0 (efeito de pétalas se soltando).
+   * @returns {[number, number]} ponto deslocado [X, Y]
+   */
   function D(x, y) {
     const t = curT * P.waveSpeed, amp = P.waveAmp;
     const p1 = x * 0.0034 + y * 0.0022 - t * 0.85;
@@ -70,14 +73,21 @@
     return [X, Y];
   }
 
-  /* helpers de path */
+  // Helpers Canvas — aliases com tuplas [x, y] no lugar dos pares soltos
   const mv = (p, q) => p.moveTo(q[0], q[1]);
   const ln = (p, q) => p.lineTo(q[0], q[1]);
   function poly(p, pts) { mv(p, pts[0]); for (let i = 1; i < pts.length; i++) ln(p, pts[i]); p.closePath(); }
   function seg(p, a, b) { mv(p, a); ln(p, b); }
   function dot(p, c, r) { p.moveTo(c[0] + r, c[1]); p.arc(c[0], c[1], r, 0, TAU); }
 
-  /* ===================== 0 · SEIGAIHA (sprites de escama) ===================== */
+  /**
+   * Pré-renderiza um sprite num <canvas> offscreen para reuso pelo loop.
+   * Centro do contexto fica no meio do canvas; `ext` define o raio visível
+   * (canvas tem lado = 2·ext, multiplicado por sdpr para nitidez em HiDPI).
+   * @param {number} ext extensão (raio) do conteúdo desenhado
+   * @param {(g: CanvasRenderingContext2D) => void} draw rotina de desenho
+   * @returns {{cn: HTMLCanvasElement, ext: number}}
+   */
   function spriteCanvas(ext, draw) {
     const s = document.createElement('canvas');
     s.width = s.height = Math.ceil(ext * 2 * sdpr);
@@ -87,6 +97,13 @@
     draw(g);
     return { cn: s, ext };
   }
+  /**
+   * Sprite de uma unidade do padrão seigaiha (青海波 — ondas concêntricas).
+   * @param {{a,b,c,hi,bg:[number,number,number]}} P_ paleta em RGB
+   * @param {number} r raio da unidade
+   * @param {0|1|2} variant 0 = base, 1 = paleta alternada,
+   *                        2 = variante "olho" com pétalas no centro
+   */
   function spSeigaihaUnit(P_, r, variant) {
     return spriteCanvas(r * 1.12, (g) => {
       g.fillStyle = css(variant === 1 ? P_.a : P_.b);
@@ -102,6 +119,13 @@
     });
   }
   let seigSprites = [];
+
+  /**
+   * Tiles do seigaiha em grade alternada (shingle).
+   * Não usa `shingle` genérico porque tem decay próprio no scatter e
+   * sorteia entre 3 variantes (a "olho" é rara, ~10%).
+   * @param {number} alpha opacidade desta camada na composição
+   */
   function drawSeigaiha(alpha) {
     const r = seigR(), dx = r * 1.16, dy = r * 0.64, rowOff = r * 0.58;
     const amp = P.waveAmp, t = curT * P.waveSpeed, sct = P.scatter;
@@ -123,14 +147,14 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ===================== MOTOR DE ESCAMAS (shingle) =====================
-     A MESMA receita do seigaiha (a única que o usuário aprovou), agora geral:
-     unidades NÍTIDAS, OPACAS e SOBREPOSTAS, empilhadas de trás p/ frente, com
-     a âncora deslocada por uma onda suave (amplitude < sobreposição). Como as
-     unidades se sobrepõem, NUNCA abre vão e a forma NUNCA vira "linha torta";
-     como cada uma anda numa fase de onda um pouco diferente, elas DESLIZAM
-     sobre as vizinhas (a oclusão migra) = interação real, como as escamas do
-     seigaiha. 1 drawImage por unidade → leve, nítido, sem piscar. */
+  /**
+   * Tiler genérico em grade (com offset alternado opcional por linha).
+   * Compartilhado por yabane e kikkō; aplica deslocamento de onda + scatter
+   * em cada célula e escolhe sprite via `geom.pick(col, row)`.
+   * @param {Array<{cn,ext}>} sprArr sprites disponíveis para este motivo
+   * @param {{dx,dy,rowOff,r:number, pick:(c:number,r:number)=>number}} geom geometria da grade
+   * @param {number} alpha opacidade desta camada
+   */
   function shingle(sprArr, geom, alpha) {
     const { dx, dy, rowOff, r, pick } = geom;
     const amp = P.waveAmp, t = curT * P.waveSpeed, sct = P.scatter;
@@ -151,13 +175,13 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ---- 1 · YABANE — penas de flecha empilhadas (vermelho), colunas alternam ---- */
+  /** Tile do yabane (矢絣 — flechas); alterna sprite par/ímpar por coluna. */
   function drawYabane(alpha) {
     const r = yabR();
     shingle(yabSprites, { dx: r * 1.18, dy: r * 0.82, rowOff: 0, r, pick: (c) => (c & 1) ? 1 : 0 }, alpha);
   }
 
-  /* ---- 2 · KIKKŌ-HANA — cascos de tartaruga nítidos + flores (dourado) ---- */
+  /** Tile do kikkō (亀甲 — favo de tartaruga); ~22% das células ganham variante acentuada. */
   function drawKikko(alpha) {
     const r = kikR();
     shingle(kikSprites, { dx: SQ3 * r, dy: 1.5 * r, rowOff: SQ3 * r / 2, r, pick: (c, w) => hash2(c, w) < 0.22 ? 1 : 0 }, alpha);
@@ -165,11 +189,16 @@
 
   const DRAW = [drawSeigaiha, drawYabane, drawKikko];
 
-  /* sprites (montados 1x no build) */
   let yabSprites = [], kikSprites = [];
+
+  /** Caminho hexagonal centrado em (0,0), raio R2 e rotação inicial rot. */
   const hexPath = (g, R2, rot) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = rot + i * PI3, x = Math.cos(a) * R2, y = Math.sin(a) * R2; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); };
 
-  // YABANE: pena de flecha opaca, ponta p/ cima; empilha em coluna = fletching contínuo.
+  /**
+   * Sprite de uma flecha do yabane.
+   * @param {0|1} variant 0 = flecha escura (preenche com paleta a),
+   *                      1 = flecha clara (preenche com paleta c)
+   */
   function spYabaneUnit(P_, r, variant) {
     const ext = r * 0.92, light = variant === 1;
     return spriteCanvas(ext, (g) => {
@@ -186,7 +215,11 @@
     });
   }
 
-  // KIKKŌ: casco hexagonal opaco (hex aninhado) + flor; favo com sobreposição → cascos.
+  /**
+   * Sprite de uma célula do kikkō (hexágono com ornato interno).
+   * @param {0|1} variant 0 = ornato neutro,
+   *                      1 = ornato com destaque dourado (acento raro)
+   */
   function spKikkoUnit(P_, r, variant) {
     const ext = r * 1.16, accent = variant === 1;
     return spriteCanvas(ext, (g) => {
@@ -196,7 +229,6 @@
       g.lineWidth = Math.max(1, hr * 0.05); g.strokeStyle = css(P_.bg, 0.6); hexPath(g, hr, PI6); g.stroke();
       g.fillStyle = css(P_.b); hexPath(g, hr * 0.64, PI6); g.fill();
       g.lineWidth = Math.max(1, hr * 0.04); g.strokeStyle = css(P_.bg, 0.4); hexPath(g, hr * 0.64, PI6); g.stroke();
-      // flor central
       g.fillStyle = css(accent ? P_.hi : P_.c);
       for (let i = 0; i < 6; i++) { const a = PI6 + i * PI3, px = Math.cos(a) * hr * 0.3, py = Math.sin(a) * hr * 0.3; g.beginPath(); g.ellipse(px, py, hr * 0.24, hr * 0.12, a, 0, TAU); g.fill(); }
       g.fillStyle = css(accent ? P_.c : P_.hi); g.beginPath(); g.arc(0, 0, hr * 0.16, 0, TAU); g.fill();
@@ -204,6 +236,12 @@
   }
 
   let PALc = [];
+
+  /**
+   * (Re)constrói o canvas, paletas em RGB e sprites pré-renderizados.
+   * Chamado no init e em todo resize (com debounce de 180ms).
+   * Não toca em P — preserva estado da timeline em curso.
+   */
   function build() {
     W = canvas.clientWidth; H = canvas.clientHeight;
     dpr = 1;
@@ -216,10 +254,13 @@
     kikSprites = [0, 1].map(v => spKikkoUnit(PALc[2], kikR(), v));
   }
 
-  /* cache de gradientes em canvases offscreen — invalidados só quando bg ou W/H mudam */
+  /* Caches para evitar regravar gradientes a cada frame: a `key` combina
+     a cor de fundo interpolada e as dimensões do canvas — invalida apenas
+     quando uma das duas muda. */
   const bgCache = { c: document.createElement('canvas'), key: '' };
   const depthCache = { c: document.createElement('canvas'), key: '' };
 
+  /** Repinta o gradiente vertical de fundo (sumi mais escuro no topo). */
   function repaintBgCache(bg) {
     const c = bgCache.c; c.width = W; c.height = H;
     const g = c.getContext('2d');
@@ -228,6 +269,7 @@
     grad.addColorStop(1, css(mix(bg, [255, 255, 255], 0.04)));
     g.fillStyle = grad; g.fillRect(0, 0, W, H);
   }
+  /** Repinta a camada de profundidade: vinheta + escurecimento radial nas bordas. */
   function repaintDepthCache(bg) {
     const c = depthCache.c; c.width = W; c.height = H;
     const g = c.getContext('2d');
@@ -240,6 +282,12 @@
     rad.addColorStop(1, css(mix(bg, [0, 0, 0], 0.45), 0.5));
     g.fillStyle = rad; g.fillRect(0, 0, W, H);
   }
+  /**
+   * Loop de animação (requestAnimationFrame).
+   * Compõe: fundo cacheado → motivo(s) interpolados → camada de profundidade.
+   * Quando P.patternMix tem fração > 0, desenha dois motivos sobrepostos
+   * para fazer a transição suave entre seigaiha/yabane/kikkō.
+   */
   function frame(ts) {
     if (!running) return;
     if (!t0) t0 = ts;
@@ -260,9 +308,7 @@
     const op = clamp(P.opacity, 0, 1);
     ctx.save();
     if (P.unitScale !== 1) { ctx.translate(W / 2, H / 2); ctx.scale(P.unitScale, P.unitScale); ctx.translate(-W / 2, -H / 2); }
-    // dessaturação driveada por life via filter (GPU-accelerated) — substitui o composite 'saturation'
     if (P.life < 0.995) ctx.filter = `saturate(${(clamp(P.life, 0, 1) * 100) | 0}%)`;
-    // crossfade contínuo (sem threshold agressivo que causa pop) — mantém a transição suave
     DRAW[i0](op * (fr > 0.01 ? 1 - fr : 1));
     if (fr > 0.01) DRAW[i1](op * fr);
     ctx.restore();
@@ -273,6 +319,10 @@
     raf = requestAnimationFrame(frame);
   }
 
+  /**
+   * Bootstrap público. Liga o campo ao canvas indicado.
+   * @param {string|HTMLCanvasElement} selector seletor CSS ou elemento canvas
+   */
   function init(selector) {
     canvas = typeof selector === 'string' ? document.querySelector(selector) : selector;
     ctx = canvas.getContext('2d');
@@ -280,7 +330,9 @@
     let to; window.addEventListener('resize', () => { clearTimeout(to); to = setTimeout(build, 180); });
     start();
   }
+  /** Inicia o loop de animação (idempotente). */
   function start() { if (running) return; running = true; t0 = 0; raf = requestAnimationFrame(frame); }
+  /** Para o loop e cancela o frame pendente. */
   function stop() { running = false; if (raf) cancelAnimationFrame(raf); }
 
   global.KimonoField = { init, start, stop, build, P, NMOT };

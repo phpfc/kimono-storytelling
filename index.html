@@ -11,13 +11,10 @@
 </head>
 <body>
 
-  <!-- ====================== PALCO FIXO ====================== -->
   <div class="stage" id="stage">
 
-    <!-- campo de padrões em canvas (unidades vivas) -->
     <canvas id="patternfield"></canvas>
 
-    <!-- CENA 1 · abertura -->
     <section class="scene" id="opening" data-screen-label="01-abertura">
       <div class="scrim"></div>
       <div class="title-block">
@@ -26,7 +23,6 @@
       </div>
     </section>
 
-    <!-- CENA 2 · gaveta (caixa de vídeo) -->
     <section class="scene" id="drawer-scene" data-screen-label="02-gaveta" style="opacity:0">
       <div class="video-box">
         <video class="drawer-video" autoplay muted playsinline preload="auto">
@@ -35,10 +31,8 @@
       </div>
     </section>
 
-    <!-- blackout -->
     <div id="blackout"></div>
 
-    <!-- CENA 3 · 1890 — 2020 -->
     <section class="scene" id="years-scene" data-screen-label="03-1890-2020" style="opacity:0">
       <div class="title-block">
         <div class="years" id="years-num">1890 — 2020</div>
@@ -49,7 +43,6 @@
       </div>
     </section>
 
-    <!-- CENA 4 · quimonos desbotados (molduras de foto) -->
     <section class="scene" id="flash-scene" data-screen-label="04-desbotados" style="opacity:0">
       <div class="photo-row" id="photo-row">
         <div class="photo">foto · quimono desbotado</div>
@@ -59,7 +52,6 @@
       </div>
     </section>
 
-    <!-- CENA 5 · cinco anos -->
     <section class="scene" id="five-scene" data-screen-label="05-cinco-anos" style="opacity:0">
       <div class="title-block">
         <div class="kanji-sub">五 年</div>
@@ -69,7 +61,6 @@
       </div>
     </section>
 
-    <!-- CENA 6 · renascimento -->
     <section class="scene" id="finale-scene" data-screen-label="06-renascimento" style="opacity:0">
       <div class="scrim"></div>
       <div class="title-block">
@@ -91,7 +82,6 @@
       </div>
     </section>
 
-    <!-- INTEGRAÇÃO · sakura caindo (anexos) — cena "a cor desbota" -->
     <div class="deco sakura" id="sakura" aria-hidden="true">
       <img class="sakura-branch" src="assets/sakura-branch.png" alt="" />
       <img class="petal p1" src="assets/sakura-petals.png" alt="" />
@@ -101,10 +91,8 @@
       <img class="petal p5" src="assets/sakura-petals.png" alt="" />
     </div>
 
-    <!-- INTEGRAÇÃO · grous (anexo) — renascimento (atrás do texto) -->
     <img class="deco cranes" id="cranes" src="assets/cranes.png" alt="" />
 
-    <!-- textos laterais verticais -->
     <div class="side left" id="side-left">
       <div class="rows" style="position:relative">
         <div class="row" data-ch="0"><span class="jp">模様は生きていた</span></div>
@@ -126,10 +114,8 @@
 
   </div>
 
-  <!-- chrome -->
   <div class="cap" id="cap"></div>
 
-  <!-- navegação por capítulos -->
   <nav class="chapter-nav" id="chapter-nav" aria-label="navegação de capítulos">
     <button class="nav-btn" id="btn-prev" aria-label="capítulo anterior">‹</button>
     <div class="nav-info">
@@ -140,7 +126,6 @@
     <button class="restart-btn" id="btn-restart" type="button">reiniciar a história</button>
   </nav>
 
-  <!-- libs -->
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="kimono-field.js"></script>

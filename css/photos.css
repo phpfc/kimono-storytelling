@@ -1,0 +1,16 @@
+/* ============================================================
+   Molduras de foto (quimonos desbotados) — placeholders dashed
+   ============================================================ */
+.photo-row{ display:flex; gap:clamp(16px,3vw,46px); align-items:center; justify-content:center; }
+.photo{
+  width:clamp(150px,14vw,224px); aspect-ratio:3/4;
+  border:1.5px dashed rgba(244,237,224,.42);
+  border-radius:4px;
+  display:flex; align-items:flex-end; justify-content:center;
+  color:rgba(244,237,224,.62);
+  font-family:"Zen Kaku Gothic New",sans-serif;
+  font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+  text-align:center; padding:14px 10px;
+  background:rgba(255,255,255,.025);
+  opacity:0;
+}
